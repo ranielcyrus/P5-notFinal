@@ -1,6 +1,7 @@
 import express from 'express'
 import customer_model from '../models/customerModel.js';
 import hashedPassword from '../utils/hashPassword.js';
+import { generateTokenAndSetCookie } from '../utils/generateToken.js';
 
 const router = express.Router();
 
@@ -18,6 +19,11 @@ router.post('/', async (req, res) => {
       const existingUser = await customer_model.findOne({username})
       if(existingUser){
         return res.status(400).json({ message: 'error: username is already taken!'})
+      }
+
+      //check if password is < 8 characters
+      if(password.length < 8) {
+        return res.status(400).json({message: 'error: password must be at least 8 characters'})
       }
 
       //check if email is already taken
@@ -40,17 +46,26 @@ router.post('/', async (req, res) => {
         address,
         contact,
         status: true
-      })
+      })  
 
+      // Save the new customer and generate the token
       await newCustomer.save();
+      generateTokenAndSetCookie(newCustomer._id, 'customer', res); // Pass userType as 'customer'
 
       res.status(201).json({
-        message: 'New Customer profile is successfully created'
-      })
-
+          message: 'New Customer profile is successfully created',
+          data: {
+              userID: newCustomer._id, // Corrected this line
+              username: newCustomer.username,
+              email: newCustomer.email,
+              address: newCustomer.address,
+              contact: newCustomer.contact
+          },
+      });
+      
     } catch (error) {
       console.log(error)
-      res.status(400).json({
+      res.status(500).json({
         message: 'bad request'
       })
     }

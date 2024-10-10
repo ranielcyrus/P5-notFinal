@@ -15,6 +15,12 @@ router.post("/create", async (req, res) => {
             itemImg,
             itemQuantity,
         } = req.body
+
+        // Check if itemImg is provided
+        if (!itemImg) {
+        return res.status(400).json({ message: "Image URL is required." });
+        }
+        
         const newMenu = new menu_model({
             itemName: itemName,
             itemType: itemType,

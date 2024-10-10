@@ -1,18 +1,22 @@
 import express from 'express'
 import customer_model from '../models/customerModel.js';
 import hashedPassword from '../utils/hashPassword.js';
+import { authProtectRoute } from '../middlewares/authProtect.js';
 
 const router = express.Router();
+
+// Apply the middleware to protect routes that require authentication
+router.use(authProtectRoute);
 
 //edit customer
 router.patch('/edit/:id', async (req, res) => {
     const { id } = req.params;
     const userDetailsToUpdate = req.body;
     try {
-      const userProfile = await customer_model.findOne({ _id: id });
+      const customerProfile = await customer_model.findOne({ _id: id });
   
       // Check if user is not found
-      if (!userProfile) {
+      if (!customerProfile) {
           return res.status(404).json({
               message: 'User not found',
           });
@@ -47,6 +51,7 @@ router.patch('/edit/:id', async (req, res) => {
     }
   })
 
+  //delete endpoint
 router.patch('/delete/:id', async (req, res) => {
     const { id } = req.params;
     try {

@@ -1,8 +1,13 @@
 import express from 'express'
 import user_model from '../models/userModel.js';
 import hashedPassword from '../utils/hashPassword.js';
+import { generateTokenAndSetCookie } from '../utils/generateToken.js';
+import { authProtectRoute } from '../middlewares/authProtect.js';
 
 const router = express.Router();
+
+// Apply authProtectRoute middleware to all routes or specific routes
+router.use(authProtectRoute); // Apply middleware to all routes
 
 //get all existing users
 router.get('/', async (req, res) => {
@@ -29,6 +34,11 @@ router.post('/add', async (req, res) => {
         return res.status(400).json({ message: 'error: username is already taken!'})
       }
 
+      //check if password is < 8 characters
+      if(password.length < 8) {
+        return res.status(400).json({message: 'error: password must be at least 8 characters'})
+      }
+
       //hasing password
       const newUser = user_model({
         username, 
@@ -37,11 +47,13 @@ router.post('/add', async (req, res) => {
         status
       })
 
-      await newUser.save();
-
-      res.status(201).json({
-        message: 'New user profile is successfully created'
-      })
+      if(newUser){
+        generateTokenAndSetCookie(newUser._id,res) //generate token 
+        await newUser.save();
+        res.status(201).json({ message: 'New User profile is successfully created'})
+      } else {
+        res.status(400).json({ message: 'Error: Invalid user Data'})
+      }
 
     } catch (error) {
       console.log(error)

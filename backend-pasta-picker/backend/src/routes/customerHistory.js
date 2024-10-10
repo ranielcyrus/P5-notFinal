@@ -1,12 +1,17 @@
 import express from "express";
 import order_model from "../models/orderModel.js";
+import { authProtectRoute } from '../middlewares/authProtect.js';
 
 const router = express.Router();
+
+// Apply the middleware to protect routes that require authentication
+router.use(authProtectRoute);
 
 // get ALL orders
 router.get("/", async (req, res) => {
     try {
         const orderItems = await order_model.find({
+            customerID: req.customer._id, // Filter orders by the authenticated customer
             _status: "active"
         })
         res.status(200).json(

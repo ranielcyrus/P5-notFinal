@@ -1,8 +1,12 @@
 import express from "express";
 import order_model from "../models/orderModel.js";
 import menu_model from "../models/menuModel.js";
+import { authProtectRoute } from "../middlewares/authProtect.js";
 
 const router = express.Router();
+
+// Apply the middleware to protect routes that require authentication
+router.use(authProtectRoute);
 
 // create orders - For admin/kitchen crew use only - for order creation IF manually creating one
 router.post("/create", async (req, res) => {

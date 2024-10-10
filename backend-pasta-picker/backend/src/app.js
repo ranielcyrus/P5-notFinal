@@ -19,12 +19,16 @@ import preMadeOrder from './routes/preMadeOrder.js'
 import customerHistory from './routes/customerHistory.js'
 import checkoutOrder from './routes/checkoutOrder.js'
 import randomizer from './routes/randomizer.js'
+import uploadImageRoute from './routes/uploadImageRoute.js'
+import cookieParser from 'cookie-parser'
+
 
 const app = express();
 
 app.set('port', port);
 
-app.use(express.json()); //to parse req.body
+app.use(express.json({limit:"5mb"})); //to parse req.body also sets limit image size
+app.use(cookieParser()); //this is to parse cookies needed for token in jwt
 
 mongoose.connect(mongoURI)
 .then(() => {console.log("MongoDB Connected")})
@@ -53,6 +57,7 @@ app.use("/api/pre-made/order", preMadeOrder)
 app.use("/api/customer/history", customerHistory)
 app.use("/api/randomizer", randomizer)
 app.use("/api/checkout/", checkoutOrder)
+app.use("/api/upload", uploadImageRoute)
 
 
 export default app

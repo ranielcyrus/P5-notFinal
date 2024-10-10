@@ -1,7 +1,11 @@
 import express from "express";
 import menu_model from "../models/menuModel.js";
+import { authProtectRoute } from "../middlewares/authProtect.js"; 
 
 const router = express.Router();
+
+// Apply the middleware to protect routes that require authentication
+router.use(authProtectRoute);
 
 // create menu item
 router.post("/create", async (req, res) => {
