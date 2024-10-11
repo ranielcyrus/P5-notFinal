@@ -5,7 +5,7 @@ export const generateTokenAndSetCookie = (userID, userType, res) => {
 
     res.cookie("jwt", token, {
         maxAge: 15 * 24 * 60 * 60 * 1000, // how long in ms
-        secure: process.env.NODE_ENV !== "development",
+        secure: process.env.NODE_ENV !== "production",
         httpOnly: true, // Ensure the cookie is only accessible by the server
         sameSite: "None", // Allows cross-site cookies
     });
