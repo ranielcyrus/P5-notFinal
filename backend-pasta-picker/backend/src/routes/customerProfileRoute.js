@@ -1,12 +1,8 @@
 import express from 'express'
 import customer_model from '../models/customerModel.js';
 import hashedPassword from '../utils/hashPassword.js';
-import { authProtectRoute } from '../middlewares/authProtect.js';
 
 const router = express.Router();
-
-// Apply the middleware to protect routes that require authentication
-router.use(authProtectRoute);
 
 //edit customer
 router.patch('/edit/:id', async (req, res) => {
