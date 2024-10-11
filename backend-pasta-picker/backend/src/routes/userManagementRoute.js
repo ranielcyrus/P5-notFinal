@@ -48,7 +48,7 @@ router.post('/add', async (req, res) => {
       })
 
       if(newUser){
-        generateTokenAndSetCookie(newUser._id,res) //generate token 
+        generateTokenAndSetCookie(newUser._id,"user",res) //generate token 
         await newUser.save();
         res.status(201).json({ message: 'New User profile is successfully created'})
       } else {
