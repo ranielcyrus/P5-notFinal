@@ -1,34 +1,33 @@
-import mongoose, {Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import menu_model from "./menuModel.js";
+import customer_model from "./customerModel.js";
 
 const orderSchema = new Schema({
     orderID: {
         type: String,
+        required: false
     },
     customerID: {
-        type: String,
-        required: false,
-    },
-    itemID: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'menu'
+        required: false,
+        ref: 'customer'
     },
-    itemName: {
-        type: String,
-    },
-    itemType: {
-        type: String,
-    },
-    itemPrice: {
-        type: Number,
-    },
-    itemQuantity: {
-        type: Number,
-    },
-    itemImg: {
-        type: String,
-    },
+    itemOrder: [{
+        itemID: {
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'menu',
+            required: true
+        },
+        itemType: {
+            type: String,
+            enum: ['Pasta', 'Sauce', 'Topping', 'Pre-made'],
+            required: false
+        },
+        itemName: {
+            type: String,
+            required: false
+        }
+    }],
     orderStatus: {
         type: String,
     },
@@ -44,12 +43,16 @@ const orderSchema = new Schema({
         type: Date,
         default: Date.now
     },
+    updatedAt: {
+        type: Date,
+        default: new Date()
+    },
     _status: {
         type: String,
         default: "active"
     }
 })
 
-const order_model = mongoose.model("order", orderSchema)
+const order_model = mongoose.model("order", orderSchema);
 
 export default order_model;

@@ -20,6 +20,7 @@ import customerHistory from './routes/customerHistory.js'
 import checkoutOrder from './routes/checkoutOrder.js'
 import randomizer from './routes/randomizer.js'
 import uploadImageRoute from './routes/uploadImageRoute.js'
+import payMongoRoute from './routes/payMongoRoute.js'
 import cookieParser from 'cookie-parser'
 
 
@@ -63,6 +64,7 @@ app.use("/api/customer/history", customerHistory)
 app.use("/api/randomizer", randomizer)
 app.use("/api/checkout/", checkoutOrder)
 app.use("/api/upload", uploadImageRoute)
+app.use("/api/paymongo", payMongoRoute)
 
 
 export default app

@@ -90,46 +90,103 @@ router.get("/:id", async (req, res) => {
 })
 
 // edit order - applicable to admin and kitchen crew users if there's a need to edit manually or update orderStatus only
-router.patch("/edit/:id", async (req, res) => {
+router.patch('/edit/:id', async (req, res) => {
     try {
-        const {
-            id
-        } = req.params
-        const {
-            customerID,
-            itemID,
-            itemName,
-            itemPrice,
-            itemQuantity,
-            total,
-            customerComment,
-            orderStatus
-        } = req.body
-        const order = await order_model.findById(id)
-        order.customerID = customerID
-        order.itemID = itemID
-        order.itemName = itemName
-        order.itemPrice = itemPrice
-        order.itemQuantity = itemQuantity
-        order.total = total
-        order.customerComment = customerComment
-        order.orderStatus = orderStatus
-        
-        await order.save()
-        res.status(201).json(
-            {
-                "message": "Order updated!", 
-                data: order
+        const { id } = req.params; // Get the order ID from params
+        const { customerID, itemOrder, customerComment, orderStatus } = req.body; // Destructure from request body
+
+        // Fetch the existing order from the database
+        const order = await order_model.findById(id);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found." });
+        }
+
+        // Update the customer ID if provided
+        if (customerID) {
+            order.customerID = customerID;
+        }
+
+        // Validate and update itemOrder if provided
+        if (itemOrder && itemOrder.length > 0) {
+            const itemIDs = itemOrder.map(orderItem => orderItem.itemID);
+            console.log('Extracted Item IDs for update:', itemIDs);
+
+            // Validate ObjectId for all item IDs
+            for (const itemID of itemIDs) {
+                if (!mongoose.isValidObjectId(itemID)) {
+                    console.error(`Invalid itemID: ${itemID}`);
+                    return res.status(400).json({ message: `Invalid itemID: ${itemID}` });
+                }
             }
-        )
+
+            // Fetch the new menu items to be added to the order
+            const menuItems = await menu_model.find({ _id: { $in: itemIDs } });
+            if (menuItems.length === 0) {
+                return res.status(404).json({ message: "No menu items found for the provided itemIDs." });
+            }
+
+            // Create a lookup for the new menu items
+            const menuItemLookup = {};
+            menuItems.forEach(menuItem => {
+                menuItemLookup[menuItem._id.toString()] = menuItem;
+            });
+
+            // Create a new array for updated items
+            const updatedItems = itemOrder.map(orderItem => {
+                const { itemID, itemQuantity } = orderItem; // Extract necessary details from request
+                const menuItem = menuItemLookup[itemID]; // Match item with the menu model
+
+                // Check if the menu item exists
+                if (!menuItem) {
+                    throw new Error(`Menu item not found for itemID: ${itemID}`);
+                }
+
+                // Log the update for debugging purposes
+                console.log(`Updating Item: ${itemID} -`, {
+                    itemName: menuItem.itemName,
+                    itemPrice: menuItem.itemPrice,
+                    itemQuantity,
+                });
+
+                // Return updated item details
+                return {
+                    itemID: menuItem._id.toString(),
+                    itemPrice: menuItem.itemPrice,
+                    itemQuantity: itemQuantity || 1, // Default to 1 if quantity is missing
+                };
+            });
+
+            // Update the itemOrder with the new details
+            order.itemOrder = updatedItems; // Replace existing itemOrder with updatedItems
+        }
+
+        // Update the customer comment if provided
+        if (customerComment) {
+            order.customerComment = customerComment;
+        }
+
+        // Update the order status if provided
+        if (orderStatus) {
+            order.orderStatus = orderStatus;
+        }
+
+        // Set total to 0 as per earlier instructions
+        order.total = 0; // To be calculated on the frontend later
+
+        // Save the updated order
+        await order.save();
+        console.log('Order Updated:', order); // Log the updated order
+
+        // Return success response
+        return res.status(200).json({
+            message: "Order updated successfully!",
+            data: order,
+        });
     } catch (error) {
-        res.status(500).json(
-            {
-                "message": error.message
-            }
-        )
+        console.error('Error updating order:', error);
+        return res.status(500).json({ message: error.message });
     }
-    })
+});
 
 // delete order - if there's an issue with the orders
 router.delete("/delete/:id", async (req, res) => {
