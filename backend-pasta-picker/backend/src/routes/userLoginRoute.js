@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
     } catch (error) {
       console.log(error)
       res.status(400).json({
-        message: 'bad request', error
+        message: `bad request ${error}` 
       })
     }
 })
