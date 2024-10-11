@@ -40,7 +40,12 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use(cors())
+app.use(
+  cors({
+    origin: true, // This will allow all origins
+    credentials: true, // This allows cookies and credentials to be sent
+  })
+)
 app.use(helmet())
 app.use("/api/register", registerRoutes)
 app.use("/api/customer", customerLoginRoute)
